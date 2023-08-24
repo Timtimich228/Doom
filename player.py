@@ -1,23 +1,22 @@
-from settings import *
 import pygame
+from nastroiki import *
 class Player():
     def __init__(self):
-        self.x,self.y = player_pos
+        self.x, self.y = player_pos
         self.angle = player_angle
-    @property
-    def pos(self):
-        return (self.x,self.y)
-    def movement(self):
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_w]:
-            self.y -= player_speed
-        if keys[pygame.K_s]:
-            self.y += player_speed
-        if keys[pygame.K_a]:
-            self.x -= player_speed
-        if keys[pygame.K_d]:
-            self.x += player_speed
-        if keys[pygame.K_LEFT]:
-            self.angle -= 0.02
-        if keys[pygame.K_RIGHT]:
-            self.angle += 0.02
+        self.speed = 2.1
+
+    def move(self):
+        key = pygame.key.get_pressed()
+        if key[pygame.K_DOWN]:
+            self.x += self.speed * math.cos(self.angle)
+            self.y -= self.speed * math.sin(self.angle)
+        if key[pygame.K_UP]:
+            self.x -= self.speed * math.cos(self.angle)
+            self.y += self.speed * math.sin(self.angle)
+        if key[pygame.K_LEFT]:
+            self.angle -= 0.03
+
+        if key[pygame.K_RIGHT]:
+            self.angle += 0.03
+
