@@ -1,28 +1,26 @@
-block_size = 64
-map_size = 12
-sprite_hit = False
-map =[
-     'WWWWWWWDWWWWWWW',
-     'W....W....W...W',
-     'W....D....D...W',
-     'W....W....W...W',
-     'WWWWWW....WWWWW',
-     'W....W....W...W',
-     'W....D....D...W',
-     'W....W....WWWWW',
-     'W.WWWW.....S..W',
-     'WWWWWWWWWWWWWWWW'
+from nastroiki import block_size
+
+
+map = [
+    '111111111111',
+    '1..........1',
+    '1...1...1..1',
+    '11111...1111',
+    '1..........1',
+    '11111...1111',
+    '1.2........1',
+    '112112112111'
 ]
-block_size += map_size
-colorversus = []
-world_map = set()
-sprite_world_map=set()
-for i,col in enumerate(map):
-    for j,row in enumerate(col):
-        if row == 'W':
-            world_map.add((i*block_size,j*block_size))
-        if row == 'D':
-            world_map.add((i * block_size, j * block_size))
-            colorversus.append((i, j))
+
+world_map = {}
+for j, row in enumerate(map):
+    for i, char in enumerate(row):
+        if char == '1':
+            world_map[(i * block_size, j * block_size)] = '1'
+        elif char == '2':
+            world_map[(i * block_size, j * block_size)] = '2'
+
+
+
 
 
