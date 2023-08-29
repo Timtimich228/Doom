@@ -7,7 +7,7 @@ from music import *
 pygame.init()
 game_active = False
 screen = pygame.display.set_mode((width,height))
-pygame.mouse.set_visible(False)
+pygame.mouse.set_visible(True)
 pygame.display.set_caption('Wolfenstein 3d')
 ammo = 8
 text_fontss = pygame.font.Font('font/Pixeltype (1).ttf',70)
@@ -23,7 +23,9 @@ start_text5 = text_fontss.render('........',False,'black')
 superstar_text = text_fontss3.render('LEVEL: 1',False,'white')
 superstar_text2 = text_fontss3.render('SCORE:',False,'white')
 superstar_text3 = text_fontss3.render('LIVES: 1',False,'white')
+hp = 100
 superstar_text4 = text_fontss3.render('HEALTH:',False,'white')
+superstar_health = text_fontss3.render(f'{hp}',False,'white')
 superstar_text5 = text_fontss3.render(f'AMMO:{ammo}',False,'white')
 superstar_image = pygame.image.load('images/pngwing.com2.png').convert_alpha()
 superstar_image = pygame.transform.scale(superstar_image,(190,140))
@@ -45,13 +47,10 @@ knife = pygame.image.load('images/Knife.png').convert_alpha()
 knife = pygame.transform.scale(knife,(190,130))
 real_knife = pygame.image.load('images/Jagknife.png').convert_alpha()
 real_knife = pygame.transform.scale(real_knife,(400,400))
-texture_atlas = pygame.image.load('images/1375.png').convert_alpha()
-texture_rectangles = {
-    'texture1': pygame.Rect(200, 200, 50, 50),
-}
-texture_name = 'texture1'
-wall_texture = texture_atlas.subsurface(texture_rectangles[texture_name])
-wall_texture = pygame.transform.scale(wall_texture,(2,2))
+texture_ease = pygame.image.load('images/193629587.jpg').convert_alpha()
+textures = {'1':pygame.image.load('images/1.png').convert_alpha(),
+            '2':pygame.image.load('images/2.png').convert_alpha(),
+            '3':pygame.image.load('sprites/0.png').convert_alpha()}
 move_texture = False
 guns_anima = [gun2,gun3]
 sprites_of_gun = None
@@ -74,39 +73,48 @@ knife_animation = False
 rust = True
 nachalo = False
 fon = False
-def ray_casting():
-    global move_texture
-    for ray in range(rays):
-        start_lines = player.angle - HALF_FOV + ray * step_angle
-        distance_to_wall = 0
-        cos_player_angle = math.cos(start_lines)
-        sin_player_angle = math.sin(start_lines)
-        color_set = False
-        texture = None
-        hit_wall = False
-        while not hit_wall and distance_to_wall < max_depth:
-            distance_to_wall += 1
-            target_x = player.x - cos_player_angle * distance_to_wall
-            target_y = player.y + sin_player_angle * distance_to_wall
-            col = int(target_x / block_size)
-            row = int(target_y / block_size)
+def mapping(a, b):
+    return (a // block_size) * block_size, (b // block_size) * block_size
 
-            if (col * block_size, row * block_size) in world_map:
-                hit_wall = True
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_g:
-                    move_texture = True
-        if hit_wall:
-            if color_set:
-                texture = wall_texture
-            else:
-                color = '#2905B9'
-            if (col, row) in colorversus:
-                color = 'white'
-            ray_angle = start_lines - player.angle
-            distance_to_wall = distance_to_wall * math.cos(ray_angle)
-            wall_height = (block_size / distance_to_wall) * (distance_to_screen / 2)
-            wall_top = (height / 2) - (wall_height / 2)
-            pygame.draw.rect(screen, color, (ray * scale, wall_top, scale, wall_height))
+
+def ray_casting():
+    ox, oy = player.x,player.y
+    xm, ym = mapping(ox, oy)
+    cur_angle = player.angle - HALF_FOV
+    for ray in range(rays):
+        sin_a = math.sin(cur_angle)
+        cos_a = math.cos(cur_angle)
+        sin_a = sin_a if sin_a else 0.000001
+        cos_a = cos_a if cos_a else 0.000001
+        x, dx = (xm + block_size, 1) if cos_a >= 0 else (xm, -1)
+        for i in range(0, width, block_size):
+            depth_v = (x - ox) / cos_a
+            yv = oy + depth_v * sin_a
+            tile_v = mapping(x+dx,yv)
+            if tile_v in world_map:
+                texture_v = world_map[tile_v]
+                break
+            x += dx * block_size
+        y, dy = (ym + block_size, 1) if sin_a >= 0 else (ym, -1)
+        for i in range(0, height, block_size):
+            depth_h = (y - oy) / sin_a
+            xh = ox + depth_h * cos_a
+            tile_h = mapping(xh, y + dy)
+            if tile_h in world_map:
+                texture_h = world_map[tile_h]
+                break
+
+            y += dy * block_size
+        depth,offset,texture = (depth_v,yv,texture_v) if depth_v < depth_h else (depth_h,xh,texture_h)
+        depth *= math.cos(player.angle - cur_angle)
+        depth = max(depth,0.00001)
+        proj_height = min(int(proj_coeff / depth),2*height)
+        offset = int(offset) % block_size
+        wall_column = textures[texture].subsurface(offset*texture_scale,0,texture_scale,texture_height)
+        wall_column = pygame.transform.scale(wall_column,(scale,proj_height))
+        screen.blit(wall_column,(ray*scale,half_height-proj_height//2))
+        cur_angle += delta_angle
+
 
 
 while True:
@@ -169,6 +177,7 @@ while True:
             fon_music2.stop()
             start_game_music = pygame.mixer_music.play()
         player.move()
+
         pygame.draw.rect(screen, (40,40,40), (0, 0, width, half_height))
         pygame.draw.rect(screen, (90,90,90), (0, half_height, width, half_height))
         point = pygame.draw.rect(screen, 'red', (half_width, half_height, 5, 5))
@@ -183,6 +192,7 @@ while True:
         screen.blit(superstar_image,(490,465))
         pygame.draw.rect(screen, 'white', (665, 470, 2, 200))
         screen.blit(superstar_text4, (670, 500))
+        screen.blit(superstar_health, (670, 550))
         pygame.draw.rect(screen, 'white', (820, 470, 2, 200))
         screen.blit(superstar_text5, (830, 500))
         pygame.draw.rect(screen, 'white', (940, 470, 2, 200))
