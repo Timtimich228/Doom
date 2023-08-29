@@ -47,10 +47,8 @@ knife = pygame.image.load('images/Knife.png').convert_alpha()
 knife = pygame.transform.scale(knife,(190,130))
 real_knife = pygame.image.load('images/Jagknife.png').convert_alpha()
 real_knife = pygame.transform.scale(real_knife,(400,400))
-texture_ease = pygame.image.load('images/193629587.jpg').convert_alpha()
 textures = {'1':pygame.image.load('images/1.png').convert_alpha(),
-            '2':pygame.image.load('images/2.png').convert_alpha(),
-            '3':pygame.image.load('sprites/0.png').convert_alpha()}
+            '2':pygame.image.load('images/2.png').convert_alpha()}
 move_texture = False
 guns_anima = [gun2,gun3]
 sprites_of_gun = None
