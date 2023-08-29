@@ -7,7 +7,7 @@ from music import *
 pygame.init()
 game_active = False
 screen = pygame.display.set_mode((width,height))
-pygame.mouse.set_visible(True)
+pygame.mouse.set_visible(False)
 pygame.display.set_caption('Wolfenstein 3d')
 ammo = 8
 text_fontss = pygame.font.Font('font/Pixeltype (1).ttf',70)
